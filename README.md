@@ -19,6 +19,24 @@
 
 You can set up the project locally or with Docker.
 
+```bash
+poetry install
+```
+```bash
+poetry shell
+```
+```bash
+python manage.py runserver
+```
+
+```bash
+docker build -t test-task .
+```
+```bash
+docker run -p 8080:8080 test-task
+```
+
+
 ## Running unit tests
 
 Run unit tests with: 
