@@ -3,7 +3,7 @@
 ## Features
 
 - Create, read, update, delete files
-- List files with optional sorting
+- List files with optional sorting(name, size)
 - Search files by name or content
 - Get file metadata
 - List files in a directory
