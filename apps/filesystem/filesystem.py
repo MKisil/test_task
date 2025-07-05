@@ -34,6 +34,7 @@ class SimpleFileSystem:
                 del self.filename_index[filename]
 
     def create_file(self, name, content):
+        name = f"/{name.strip('/ ')}" # if only filename is provided, it will be created in the root directory
         if name in self.files:
             raise FileExistsError(f"File '{name}' already exists.")
         self.files[name] = content
