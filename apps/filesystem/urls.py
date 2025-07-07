@@ -1,19 +1,13 @@
 from django.urls import path
 
 from .views import (
-    FileListView,
-    FileDetailView,
-    FilenameSearchView,
-    ContentSearchView,
-    MetadataView,
+    FileView,
     DirectoryView
 )
 
 urlpatterns = [
-    path('files/', FileListView.as_view()),
-    path('files/<str:name>/', FileDetailView.as_view()),
-    path('search/filename/', FilenameSearchView.as_view()),
-    path('search/content/', ContentSearchView.as_view()),
-    path('metadata/<str:name>/', MetadataView.as_view()),
-    path('directories/', DirectoryView.as_view()),
+    path('file/', FileView.as_view()),
+    path('file/<path:path>/', FileView.as_view()),
+    path('directory/', DirectoryView.as_view()),
+    path('directory/<path:path>/', DirectoryView.as_view()),
 ]

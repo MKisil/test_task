@@ -1,6 +1,9 @@
-class FileNotFoundError(Exception):
+class FileOrDirectoryNotFoundError(Exception):
     pass
 
 
-class FileExistsError(Exception):
+class FileOrDirectoryExistsError(Exception):
+    pass
+
+class InvalidPathError(Exception):
     pass

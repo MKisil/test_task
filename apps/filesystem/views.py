@@ -2,68 +2,60 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from .exceptions import FileExistsError, FileNotFoundError
+from .exceptions import FileOrDirectoryNotFoundError, FileOrDirectoryExistsError, InvalidPathError
 from .filesystem import fs
 
-class FileListView(APIView):
-    def get(self, request):
-        sort_by = request.query_params.get("sort_by")
-        return Response(fs.list_files(sort_by))
+class FileView(APIView):
+    def get(self, request, path):
+        try:
+            return Response(fs.read_file(path))
+        except FileOrDirectoryNotFoundError as e:
+            return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
 
     def post(self, request):
-        name = request.data.get("name")
+        path = request.data.get("path")
         content = request.data.get("content", "")
         try:
-            fs.create_file(name, content)
+            fs.create_file(path, content)
             return Response({"message": "File created."}, status=status.HTTP_201_CREATED)
-        except Exception as e:
+        except (FileOrDirectoryExistsError, InvalidPathError) as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-
-class FileDetailView(APIView):
-    def get(self, request, name):
-        try:
-            return Response({"content": fs.read_file(name)})
-        except FileNotFoundError as e:
-            return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
-
-    def put(self, request, name):
+    def put(self, request, path):
         content = request.data.get("content", "")
         try:
-            fs.update_file(name, content)
+            fs.update_file(path, content)
             return Response({"message": "File updated."})
-        except FileNotFoundError as e:
+        except FileOrDirectoryNotFoundError as e:
             return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
 
-    def delete(self, request, name):
+    def delete(self, request, path):
         try:
-            fs.delete_file(name)
+            fs.delete_dir_or_file(path)
             return Response({"message": "File deleted."})
-        except FileNotFoundError as e:
-            return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
-
-
-class FilenameSearchView(APIView):
-    def get(self, request):
-        query = request.query_params.get("q", "")
-        return Response(fs.search_by_filename(query))
-
-
-class ContentSearchView(APIView):
-    def get(self, request):
-        query = request.query_params.get("q", "")
-        return Response(fs.search_by_content(query))
-
-
-class MetadataView(APIView):
-    def get(self, request, name):
-        try:
-            return Response(fs.get_metadata(name))
-        except FileNotFoundError as e:
+        except FileOrDirectoryNotFoundError as e:
             return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
 
 
 class DirectoryView(APIView):
-    def get(self, request):
-        path = request.query_params.get("path", "")
-        return Response(fs.list_dir(path))
+    def get(self, request, path):
+        sort_by = request.query_params.get("sort_by")
+        try:
+            return Response(fs.list_dir(path, sort_by=sort_by))
+        except FileOrDirectoryNotFoundError as e:
+            return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
+
+    def post(self, request):
+        path = request.data.get("path", "")
+        try:
+            fs.create_dir(path)
+            return Response({"message": "Directory created."}, status=status.HTTP_201_CREATED)
+        except (FileOrDirectoryExistsError, InvalidPathError) as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, path):
+        try:
+            fs.delete_dir_or_file(path)
+            return Response({"message": "Directory deleted."})
+        except FileOrDirectoryNotFoundError as e:
+            return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
